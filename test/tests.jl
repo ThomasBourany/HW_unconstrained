@@ -35,4 +35,6 @@ module maxlikeTest
 
 	end
 
+	FactCheck.exitstatus()
+
 end
