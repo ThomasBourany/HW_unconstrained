@@ -1,11 +1,7 @@
 
 
 
-
-
-module maxlikeTest
-
-	using FactCheck, maxlike
+context("basics") do
 
 	facts("Test Data Construction") do
 
@@ -17,7 +13,8 @@ module maxlikeTest
 
 	facts("Test Return value of likelihood") do
 
-		# likelihood should return a real number
+		d = makeData(18)
+		@fact isa(maxlike.loglik(rand(3),d) , Real) --> true
 
 	end
 
@@ -27,14 +24,48 @@ module maxlikeTest
 		d = makeData()
 		gradvec = rand(length(d["beta"]))
 		testvec = deepcopy(gradvec)
-		r = maxlike.grad(d["beta"],gradvec,d["X"],d["y"],d["dist"])
+		r = maxlike.grad!(d["beta"],gradvec,d)
 
 		@fact r --> nothing 
 
 		@fact gradvec --> not(testvec)
 
 	end
+end
 
-	FactCheck.exitstatus()
+context("test maximization results") do
+
+	facts("maximize returns approximate result") do
+		m = maxlike.maximize_like();
+		d = makeData(10);
+		@fact m.minimum --> roughly(d["beta"],atol=1e-1)
+	end
+
+	facts("maximize_grad returns accurate result") do
+		m = maxlike.maximize_like_grad();
+		d = makeData(10);
+		@fact m.minimum --> roughly(d["beta"],atol=1e-1)
+	end
 
 end
+
+context("test against GLM") do
+	d = makeData();
+	df = hcat(DataFrame(y=d["y"]),convert(DataFrame,d["X"]))
+	gg = glm(y~x2+x3,df,Binomial(),ProbitLink())  # don't include intercept column
+	m = maxlike.maximize_like_grad_se();
+
+	facts("estimates vs GLM") do
+
+		@fact m[:Estimate] --> roughly(coef(gg),atol=1e-5)
+
+	end
+
+	# # facts("standard errors vs GLM") do
+
+	# # 	# @pending m[:StandardError] --> roughly(stderr(gg),atol=1e-5)
+
+	# end
+
+end
+
