@@ -31,20 +31,47 @@ context("basics") do
 		@fact gradvec --> not(testvec)
 
 	end
+
+	facts("gradient vs finite difference") do
+		# gradient should not return anything,
+		# but modify a vector in place.
+		d = makeData()
+		gradvec = ones(length(d["beta"]))
+		r = maxlike.grad!(d["beta"],gradvec,d)
+
+		fd = maxlike.test_finite_diff(x->maxlike.loglik(x,d),gradvec,d["beta"],1e-4)
+
+		@fact r --> nothing 
+
+		@fact fd --> true
+
+	end
 end
 
 context("test maximization results") do
 
 	facts("maximize returns approximate result") do
 		m = maxlike.maximize_like();
-		d = makeData(10);
+		d = makeData();
 		@fact m.minimum --> roughly(d["beta"],atol=1e-1)
 	end
 
 	facts("maximize_grad returns accurate result") do
 		m = maxlike.maximize_like_grad();
-		d = makeData(10);
+		d = makeData();
 		@fact m.minimum --> roughly(d["beta"],atol=1e-1)
+	end
+
+	facts("gradient is close to zero at max like estimate") do
+		m = maxlike.maximize_like_grad();
+		d = makeData()
+		gradvec = ones(length(d["beta"]))
+		r = maxlike.grad!(m.minimum,gradvec,d)
+
+		@fact r --> nothing 
+
+		@fact gradvec --> roughly(zeros(length(gradvec)),atol=1e-5) 
+
 	end
 
 end

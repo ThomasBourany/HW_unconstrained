@@ -57,9 +57,6 @@ module maxlike
 		xbeta     = d["X"]*betas	# (n,1)
 		G_xbeta   = cdf(d["dist"],xbeta)	# (n,1)
 		g_xbeta   = pdf(d["dist"],xbeta)	# (n,1)
-		# println("G_xbeta = $G_xbeta")
-		# println("g_xbeta = $g_xbeta")
-		# storage[:]= -mean((d["y"] .* g_xbeta ./ G_xbeta - (1-d["y"]) .* g_xbeta ./ (1-G_xbeta)) .* d["X"],1)
 		storage[:]= -sum((d["y"] .* g_xbeta ./ G_xbeta - (1-d["y"]) .* g_xbeta ./ (1-G_xbeta)) .* d["X"],1)
 		return nothing
 	end
@@ -72,7 +69,6 @@ module maxlike
 		xb1 = xbeta .* g_xbeta ./ G_xbeta .+ (g_xbeta ./ G_xbeta).^2
 		xb2 = (g_xbeta ./ (1 .- G_xbeta)).^2  .- xbeta .* g_xbeta ./ (1 -G_xbeta) 
 		fill!(storage,0.0)
-		# storage[:,:] = zeros(length(betas),length(betas))
 		
 		for i in 1:d["n"]
 			XX = d["X"][i,:]' * d["X"][i,:]   #k,k
@@ -114,7 +110,7 @@ module maxlike
 	function maximize_like_grad(x0=[0.8,1.0,-0.1],meth=:bfgs)
 		d = makeData(10000)
 		# storage = zeros(length(d["beta"]))
-		res = optimize((arg)->loglik(arg,d),(arg,g)->grad!(arg,g,d),x0, method = meth, iterations = 1000,grtol=1e-20,ftol=1e-20)
+		res = optimize((arg)->loglik(arg,d),(arg,g)->grad!(arg,g,d),x0, method = meth, iterations = 1000,grtol=1e-6,ftol=1e-20)
 		return res
 	end
 
@@ -165,6 +161,70 @@ module maxlike
 
 		end
 		fig[:canvas][:draw]()
+		fig[:canvas][:set_window_title]("Objective Function Plot")
+	end
+	function plotGrad()
+		d = makeData(10000)
+		ngrid = 100
+		pad = 1
+		k = length(d["beta"])
+		beta0 = repmat(d["beta"]',ngrid,1)
+		values = zeros(ngrid,k)
+		grad = ones(k)
+		fig,axes = subplots(1,k)
+		currplot = 0
+		for b in 1:k
+			currplot += 1
+			xaxis = collect(linspace(d["beta"][b]-pad,d["beta"][b]+pad,ngrid))
+			betas = copy(beta0)
+			betas[:,b] = xaxis
+			for i in 1:ngrid
+				grad!(betas[i,:][:],grad,d)
+				values[i,:] = grad
+			end
+			ax = axes[currplot]
+			ax[:plot](xaxis,values)
+			ax[:set_title]("beta $currplot")
+			ax[:axvline](x=d["beta"][b],color="red")
+
+		end
+		fig[:canvas][:draw]()
+		fig[:canvas][:set_window_title]("Gradient Plot")
+	end
+
+	"""
+	Version for two separate functions supplying objective and gradient
+	"""
+	function test_finite_diff(f::Function,g::Vector{Float64},x::Vector{Float64},tol=1e-6)
+		# get gradient from f
+		grad = g
+		# get finite difference approx
+		fdiff = finite_diff2(f,x)
+		r = hcat(1:length(x),grad,fdiff,abs(grad-fdiff))
+		errors = find(abs(grad-fdiff).>tol)
+		if length(errors) >0
+			println("elements with errors:")
+			println("id  supplied gradient     finite difference     abs diff")
+			for i in 1:length(errors)
+				@printf("%d   %f3.8            %f3.8          %f1.8\n",r[errors[i],1],r[i,2],r[i,3],r[i,4])
+			end
+			return (false,errors)
+		else 
+			println("no errors.")
+			return true
+		end
+	end
+	function finite_diff2(f::Function,x::Vector)
+		h = sqrt(eps())
+		fgrad = similar(x)
+		tgrad = similar(x)
+		for i in 1:length(x)
+			step = abs(x[i]) > 1 ? abs(x[i]) * h : 1.0 * h
+			newx = copy(x)
+			newx[i] = x[i]+step
+			fgrad[i] = (f(newx) - f(x))/step
+		end
+		return fgrad
 	end
 
 	function runAll()
