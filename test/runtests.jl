@@ -2,7 +2,7 @@
 
 module maxlikeTest
 
-using FactCheck, maxlike, GLM, DataFrames
+using FactCheck, HW_unconstrained, GLM, DataFrames
 
 include("tests.jl")
 

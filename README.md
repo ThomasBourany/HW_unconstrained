@@ -1,7 +1,7 @@
 
 
 
-[![Build Status](https://travis-ci.org/ScPo-CompEcon/HW-unconstrained.svg?branch=solution)](https://travis-ci.org/ScPo-CompEcon/HW-unconstrained)
+[![Build Status](https://travis-ci.org/ScPo-CompEcon/HW_unconstrained.svg?branch=solution)](https://travis-ci.org/ScPo-CompEcon/HW_unconstrained)
 
 
 ## Solutions Branch: How to get this branch
@@ -12,7 +12,7 @@
 
 ```bash
 # add a new remote repository called upstream:
-git remote add upstream https://github.com/ScPo-CompEcon/HW-unconstrained.git
+git remote add upstream https://github.com/ScPo-CompEcon/HW_unconstrained.git
 
 # next, get all branches on that remote
 git fetch upstream

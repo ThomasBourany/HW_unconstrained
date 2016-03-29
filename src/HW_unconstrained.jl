@@ -1,6 +1,6 @@
 
 
-module maxlike
+module HW_unconstrained
 
 	# imports: which packages are we going to use in this module?
 	using Distributions, Optim, PyPlot, DataFrames, Debug
