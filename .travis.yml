@@ -2,6 +2,10 @@ language: julia
 os:
   - osx
   - linux
+addons: 
+  apt:
+    packages:
+      - python-matplotlib
 julia:
   - release
   - 0.4
