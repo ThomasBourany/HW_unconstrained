@@ -67,14 +67,21 @@ module HW_unconstrained
 		G_xbeta   = cdf(d["dist"],xbeta)	# (n,1)
 		g_xbeta   = pdf(d["dist"],xbeta)	# (n,1)
 		xb1 = xbeta .* g_xbeta ./ G_xbeta .+ (g_xbeta ./ G_xbeta).^2
-		xb2 = (g_xbeta ./ (1 .- G_xbeta)).^2  .- xbeta .* g_xbeta ./ (1 -G_xbeta) 
+		xb0 = (g_xbeta ./ (1 .- G_xbeta)).^2  .- xbeta .* g_xbeta ./ (1 -G_xbeta) 
 		fill!(storage,0.0)
+
+		y1 = similar(storage)
+		y0 = similar(storage)
 		
 		for i in 1:d["n"]
 			XX = d["X"][i,:]' * d["X"][i,:]   #k,k
-			storage[:,:] = storage .+ (xb1[i] + xb2[i]) * XX
-		end 
-
+			if d["y"][i] == 1
+				y1 = y1 .+ xb1[i] * XX
+			else
+				y0 = y0 .+ xb0[i] * XX
+			end
+		end
+		storage[:,:] = y0 .+ y1
 		return nothing
 	end
 

@@ -88,11 +88,11 @@ context("test against GLM") do
 
 	end
 
-	# # facts("standard errors vs GLM") do
+	facts("standard errors vs GLM") do
 
-	# # 	# @pending m[:StandardError] --> roughly(stderr(gg),atol=1e-5)
+		@fact m[:StandardError] --> roughly(stderr(gg),atol=1e-5)
 
-	# end
+	end
 
 end
 
