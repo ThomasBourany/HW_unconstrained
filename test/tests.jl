@@ -79,18 +79,18 @@ end
 context("test against GLM") do
 	d = makeData();
 	df = hcat(DataFrame(y=d["y"]),convert(DataFrame,d["X"]))
-	gg = glm(y~x2+x3,df,Binomial(),ProbitLink())  # don't include intercept column
+	gg = glm(y~x1+x2+x3,df,Binomial(),ProbitLink())  
 	m = HW_unconstrained.maximize_like_grad_se();
 
 	facts("estimates vs GLM") do
 
-		@fact m[:Estimate] --> roughly(coef(gg),atol=1e-5)
+		@fact m[:Estimate] --> roughly(coef(gg)[2:end],atol=1e-3)
 
 	end
 
 	facts("standard errors vs GLM") do
 
-		@fact m[:StandardError] --> roughly(stderr(gg),atol=1e-5)
+		@fact m[:StandardError] --> roughly(stderr(gg)[2:end],atol=1e-3)
 
 	end
 

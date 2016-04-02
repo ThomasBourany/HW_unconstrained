@@ -32,7 +32,8 @@ module HW_unconstrained
 		beta = [ 1; 1.5; -0.5 ]
 		srand(3122015)
 		numobs = n
-		X = hcat(ones(numobs), randn(numobs,2))    # n,k
+		X = randn(numobs,3)    # n,k
+		# X = hcat(ones(numobs), randn(numobs,2))    # n,k
 		epsilon = randn(numobs)
 		Y = X * beta + epsilon
 		y = 1.0 * (Y .> 0)
